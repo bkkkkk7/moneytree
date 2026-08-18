@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="모두의 베팅으로 황금 돈나무가 자라는 커뮤니티 잭팟 슬롯 데모"
+    />
+    <title>황금 돈나무 — 커뮤니티 잭팟 데모</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="game" id="game">
+      <header class="topbar">
+        <div class="brand" aria-label="황금 돈나무">
+          <span class="brand__seal">福</span>
+          <span>
+            <strong>황금 돈나무</strong>
+            <small>COMMUNITY JACKPOT</small>
+          </span>
+        </div>
+
+        <div class="topbar__actions">
+          <span class="live-pill"><i></i><b id="onlineCount">24</b>명 참여 중</span>
+          <button class="sound-button" id="soundButton" type="button" aria-label="사운드 켜기" aria-pressed="false">
+            <span aria-hidden="true">♪</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="tree-stage" id="treeStage" aria-label="커뮤니티 잭팟 돈나무">
+        <div class="sky-glow" aria-hidden="true"></div>
+        <div class="jackpot-crown">
+          <p><span class="live-dot"></span> LIVE GRAND JACKPOT</p>
+          <strong id="jackpotValue">₩12,847,500</strong>
+          <span class="jackpot-crown__shine" aria-hidden="true"></span>
+        </div>
+
+        <div class="tree-wrap" id="treeWrap">
+          <img
+            class="tree-image"
+            src="./assets/golden-money-tree.png"
+            alt="황금 잎과 동전이 가득 달린 돈나무"
+          />
+          <div class="tree-aura" aria-hidden="true"></div>
+          <div class="coin-fruit-layer" id="coinFruitLayer" aria-hidden="true"></div>
+          <div class="spark-layer" id="sparkLayer" aria-hidden="true"></div>
+        </div>
+
+        <div class="charge-panel">
+          <div class="charge-panel__copy">
+            <span id="chargeLabel">황금 기운이 차오르는 중</span>
+            <strong id="chargePercent">76.8%</strong>
+          </div>
+          <div class="charge-track" role="progressbar" aria-label="잭팟 충전도" aria-valuemin="0" aria-valuemax="100" aria-valuenow="77">
+            <i id="chargeBar"></i>
+            <span class="charge-track__spark" id="chargeSpark" aria-hidden="true"></span>
+          </div>
+          <p id="nearMessage">베팅할수록 나무에 황금 열매가 늘어나요</p>
+        </div>
+
+        <div class="bet-toast" id="betToast" role="status" aria-live="polite"></div>
+        <div class="jackpot-burst" id="jackpotBurst" aria-hidden="true">
+          <span>COMMUNITY</span>
+          <strong>JACKPOT!</strong>
+          <small id="winnerName">행운의 주인공을 찾는 중…</small>
+        </div>
+      </section>
+
+      <section class="machine" aria-label="슬롯 게임">
+        <div class="community-feed" aria-live="polite">
+          <span class="community-feed__icon">↗</span>
+          <div>
+            <small>방금 들어온 베팅</small>
+            <strong id="feedText">SEOUL_88님이 ₩500 베팅 · 나무가 더 빛납니다</strong>
+          </div>
+          <span class="community-feed__plus" id="feedPlus">+0.5%</span>
+        </div>
+
+        <div class="reel-frame" id="reelFrame">
+          <div class="reel-frame__top">
+            <span>243 WAYS</span>
+            <strong id="resultMessage">행운의 황금 열매를 모아보세요</strong>
+            <span>DEMO</span>
+          </div>
+          <div class="reels" id="reels" aria-label="슬롯 릴" aria-live="polite"></div>
+          <div class="win-line" id="winLine" aria-hidden="true"></div>
+        </div>
+      </section>
+
+      <footer class="bet-dock">
+        <div class="wallet">
+          <small>보유 코인</small>
+          <strong id="balanceValue">₩125,000</strong>
+        </div>
+
+        <div class="bet-stepper" aria-label="베팅 금액 선택">
+          <button id="betMinus" type="button" aria-label="베팅 금액 줄이기">−</button>
+          <span>
+            <small>베팅 금액</small>
+            <strong id="betValue">₩500</strong>
+          </span>
+          <button id="betPlus" type="button" aria-label="베팅 금액 늘리기">＋</button>
+        </div>
+
+        <button class="spin-button" id="spinButton" type="button">
+          <span class="spin-button__halo" aria-hidden="true"></span>
+          <span class="spin-button__coin" aria-hidden="true">₩</span>
+          <span class="spin-button__label">
+            <strong>베팅하고 돌리기</strong>
+            <small>돈나무에 황금 기운 보내기</small>
+          </span>
+          <span class="spin-button__arrow" aria-hidden="true">›</span>
+        </button>
+      </footer>
+
+      <p class="demo-note">무료 인터랙션 데모 · 실제 화폐나 상품을 사용하지 않습니다</p>
+    </main>
+
+    <script src="./game.js"></script>
+  </body>
+</html>
