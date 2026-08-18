@@ -15,7 +15,12 @@
     [20, 38], [29, 29], [39, 24], [50, 29], [61, 23], [72, 31], [80, 42],
     [25, 50], [36, 43], [48, 46], [59, 41], [70, 50], [31, 59], [43, 55],
     [56, 57], [66, 61], [19, 57], [77, 58], [45, 34], [56, 35], [35, 35],
+    [14, 45], [17, 32], [23, 25], [31, 20], [42, 18], [52, 20], [64, 18],
+    [75, 23], [85, 35], [23, 44], [31, 39], [41, 40], [52, 39], [63, 36],
+    [74, 42], [25, 56], [37, 52], [49, 52], [61, 49], [72, 55], [28, 64],
+    [39, 61], [51, 63], [63, 65], [74, 62], [45, 27], [67, 29], [54, 31],
   ];
+  const MAX_FRUIT_COUNT = 96;
   const STORAGE_KEY = "golden-tree-jackpot-state-v1";
   const CHANNEL_NAME = "golden-tree-jackpot-live-v1";
 
@@ -72,7 +77,7 @@
         return {
           jackpot: Number(stored.jackpot) || 12847500,
           progress: Math.min(99.4, Math.max(68, Number(stored.progress) || 76.8)),
-          fruitCount: Math.min(TREE_POSITIONS.length, Number(stored.fruitCount) || 7),
+          fruitCount: Math.min(MAX_FRUIT_COUNT, Number(stored.fruitCount) || 7),
         };
       }
     } catch (_error) {
@@ -137,12 +142,36 @@
     }
   }
 
+  function fruitPosition(index) {
+    const base = TREE_POSITIONS[index % TREE_POSITIONS.length];
+    const layer = Math.floor(index / TREE_POSITIONS.length);
+    if (layer === 0) return base;
+    const xJitter = ((index * 17) % 7 - 3) * 1.15;
+    const yJitter = ((index * 11) % 5 - 2) * 1.25;
+    return [
+      Math.min(87, Math.max(13, base[0] + xJitter)),
+      Math.min(67, Math.max(17, base[1] + yJitter)),
+    ];
+  }
+
+  function fruitGainForBet(amount) {
+    if (amount >= 2500) return 7;
+    if (amount >= 1000) return 5;
+    if (amount >= 500) return 4;
+    if (amount >= 250) return 3;
+    return 2;
+  }
+
   function addFruitAt(index, animate = true) {
-    const position = TREE_POSITIONS[index % TREE_POSITIONS.length];
+    const position = fruitPosition(index);
+    const size = [22, 25, 28, 31][index % 4];
     const fruit = document.createElement("span");
     fruit.className = "coin-fruit";
     fruit.style.left = `${position[0]}%`;
     fruit.style.top = `${position[1]}%`;
+    fruit.style.width = `${size}px`;
+    fruit.style.height = `${size}px`;
+    fruit.style.zIndex = String(5 + index % 4);
     if (!animate) fruit.style.animationDelay = "-2s";
     els.coinFruitLayer.append(fruit);
     if (animate) sparkleAt(position[0], position[1]);
@@ -241,13 +270,13 @@
     window.setTimeout(() => els.treeWrap.classList.remove("is-fed"), 760);
   }
 
-  function animateCoinsToTree(amount, isLocal) {
+  function animateCoinsToTree(amount, isLocal, startFruitIndex, fruitGain) {
     const sourceRect = (isLocal ? els.spinButton : els.communityFeed).getBoundingClientRect();
     const stageRect = els.treeWrap.getBoundingClientRect();
-    const destination = TREE_POSITIONS[state.fruitCount % TREE_POSITIONS.length];
-    const count = isLocal ? Math.min(8, 4 + Math.ceil(amount / 600)) : 3;
+    const count = isLocal ? Math.min(11, fruitGain + 4) : Math.max(4, fruitGain + 1);
 
     for (let index = 0; index < count; index += 1) {
+      const destination = fruitPosition(startFruitIndex + index % Math.max(1, fruitGain));
       const coin = document.createElement("span");
       coin.className = "flying-coin";
       coin.textContent = "₩";
@@ -272,10 +301,10 @@
       });
       animation.onfinish = () => {
         coin.remove();
+        sparkleAt(destination[0], destination[1]);
         if (index === count - 1) {
           animateTreeImpact();
           playCoinSound();
-          sparkleAt(destination[0], destination[1]);
         }
       };
     }
@@ -313,19 +342,22 @@
     const previousJackpot = state.jackpot;
     state.jackpot += event.contribution;
     state.progress = Math.min(100, state.progress + event.delta);
-    const shouldGrowFruit = state.fruitCount < TREE_POSITIONS.length && (
-      event.local || Math.random() > 0.55 || state.progress > 90
-    );
-    if (shouldGrowFruit) {
-      window.setTimeout(() => {
-        addFruitAt(state.fruitCount, true);
-        state.fruitCount += 1;
-        saveSharedState();
-      }, 680);
-    }
+    const startFruitIndex = state.fruitCount;
+    const availableFruitSlots = MAX_FRUIT_COUNT - state.fruitCount;
+    const fruitGain = Math.min(availableFruitSlots, fruitGainForBet(event.amount));
 
     animateJackpotValue(previousJackpot, state.jackpot);
-    animateCoinsToTree(event.amount, Boolean(event.local));
+    animateCoinsToTree(event.amount, Boolean(event.local), startFruitIndex, fruitGain);
+    if (fruitGain > 0) {
+      state.fruitCount += fruitGain;
+      for (let offset = 0; offset < fruitGain; offset += 1) {
+        window.setTimeout(() => {
+          addFruitAt(startFruitIndex + offset, true);
+          if (offset === fruitGain - 1) saveSharedState();
+        }, 560 + offset * 125);
+      }
+    }
+
     updateFeed(event.player, event.amount, event.delta);
     renderProgress();
     saveSharedState();
@@ -434,7 +466,7 @@
     els.spinButton.classList.add("is-firing");
     els.resultMessage.textContent = "황금 기운을 보내는 중…";
     renderMoney();
-    showToast(`${formatWon(bet)} 베팅 · 돈나무 +1`);
+    showToast(`${formatWon(bet)} 베팅 · 황금 열매 +${fruitGainForBet(bet)}`);
     applyCommunityBet(makeBetEvent("내 베팅", bet, true));
 
     const result = await spinReels(bet);
